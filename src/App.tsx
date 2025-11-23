@@ -1,5 +1,5 @@
-// src/App.tsx (No changes needed - dropdown is already handled in CSS)
-import React, { useState, useEffect, useMemo } from 'react';
+// src/App.tsx (Fixed: Removed unused 'React' import to resolve TS6133 error)
+import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import './App.css';
 
