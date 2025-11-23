@@ -1,4 +1,3 @@
-// src/App.tsx (Fixed: Removed unused 'React' import to resolve TS6133 error)
 import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import './App.css';
@@ -16,13 +15,13 @@ interface Route {
 
 interface Platform {
   platform_id: number;
-  route_list: Route[];
+  route_list?: Route[];  // Made optional to match potential API response
 }
 
 interface ApiResponse {
   status: number;
   system_time: string;
-  platform_list?: Platform[];
+  platform_list?: Platform[];  // Made optional for safety
 }
 
 const STATIONS: Record<string, string> = {
@@ -121,6 +120,7 @@ function App() {
       setData(res.data);
     } catch (err) {
       console.error(err);
+      setData(null);
     } finally {
       setLoading(false);
     }
@@ -170,45 +170,55 @@ function App() {
       <main className="main">
         {loading && <div className="spinner">Loading...</div>}
 
-        {data && data.status === 1 && (
+        {data && data.status === 1 ? (
           <>
             <h1 className="station-title">{STATIONS[selectedId]}</h1>
 
-            {data.platform_list?.map((platform) => (
-              <div key={platform.platform_id} className="platform-card">
-                <div className="platform-header">
-                  Platform {platform.platform_id}
+            {data.platform_list?.length ? (
+              data.platform_list.map((platform) => (
+                <div key={platform.platform_id} className="platform-card">
+                  <div className="platform-header">
+                    Platform {platform.platform_id}
+                  </div>
+                  <div className="routes">
+                    {platform.route_list?.length ? (
+                      platform.route_list.map((route, i) => (
+                        <div
+                          key={i}
+                          className={`route-item ${route.train_length === 2 ? 'coupled' : ''} ${
+                            route.time_en === '-' ? 'arriving' : ''
+                          } ${route.stop === 1 ? 'stopped' : ''}`}
+                        >
+                          <div className="route-no">{route.route_no}</div>
+                          <div className="dest">
+                            <div className="en">{route.dest_en}</div>
+                            <div className="ch">{route.dest_ch}</div>
+                          </div>
+                          <div className="time">
+                            <div className="en">{route.time_en}</div>
+                            <div className="ch">{route.time_ch}</div>
+                          </div>
+                          <div className="length">
+                            {route.train_length === 1 ? 'Single' : 'Coupled'}
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div>No routes available for this platform</div>
+                    )}
+                  </div>
                 </div>
-                <div className="routes">
-                  {platform.route_list.map((route, i) => (
-                    <div
-                      key={i}
-                      className={`route-item ${route.train_length === 2 ? 'coupled' : ''} ${
-                        route.time_en === '-' ? 'arriving' : ''
-                      } ${route.stop === 1 ? 'stopped' : ''}`}
-                    >
-                      <div className="route-no">{route.route_no}</div>
-                      <div className="dest">
-                        <div className="en">{route.dest_en}</div>
-                        <div className="ch">{route.dest_ch}</div>
-                      </div>
-                      <div className="time">
-                        <div className="en">{route.time_en}</div>
-                        <div className="ch">{route.time_ch}</div>
-                      </div>
-                      <div className="length">
-                        {route.train_length === 1 ? 'Single' : 'Coupled'}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p>No platform information available.</p>
+            )}
 
             <div className="update">
               Updated: {data.system_time ? new Date(data.system_time).toLocaleTimeString('en-HK') : ''}
             </div>
           </>
+        ) : (
+          <p>No data available or service error. Please try again.</p>
         )}
       </main>
     </div>
