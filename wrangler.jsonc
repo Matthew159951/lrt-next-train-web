@@ -1,0 +1,7 @@
+{
+  "name": "lrt-next-train",
+  "compatibility_date": "2025-01-23",
+  "assets": {
+    "directory": "./dist"
+  }
+}
